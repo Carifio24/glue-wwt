@@ -23,6 +23,8 @@ class WWTQtViewer(WWTDataViewerBase, DataViewer):
         WWTTableLayerArtist: WWTTableStyleEditor,
     }
 
+    tools = ['wwt:pointselect']
+
     subtools = {'save': ['wwt:save', 'wwt:savetour']}
 
     def __init__(self, session, parent=None, state=None):

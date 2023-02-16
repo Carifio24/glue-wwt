@@ -4,9 +4,14 @@ import io
 import time
 from qtpy import compat
 
-from glue.viewers.common.tool import Tool
+from glue.viewers.common.tool import Tool, CheckableTool
 from glue.utils.qt import get_qapp
 from glue.config import viewer_tool
+
+from glue.core import Data, Subset
+from glue.core.subset import ElementSubsetState
+from .image_layer import WWTImageLayerArtist
+from .table_layer import WWTTableLayerArtist
 
 
 @viewer_tool
@@ -112,3 +117,53 @@ class SaveTourTool(Tool):
 
         with io.open(filename, 'w', newline='') as f:
             f.write(tourxml)
+
+
+@viewer_tool
+class PointSourceSelectionTool(CheckableTool):
+    icon = 'glue_filesave' # Use glue_point from glue-vispy-viewers
+    tool_id = 'wwt:pointselect'
+    action_text = 'Select point source(s)'
+    tool_tip = 'Select point sources by clicking. Click a source again to remove it.'
+
+    active_layer_artist = None
+
+    def activate(self):
+        # Get the values of the currently active layer artist - we
+        # specifically pick the layer artist that is selected in the layer
+        # artist view in the left since we have to pick one.
+        layer_artist = self.viewer._view.layer_list.current_artist()
+
+        # If the layer artist is for a Subset not Data, pick the first Data
+        # one instead (where the layer artist is a volume artist)
+        # We also want to make sure that the layer is a table layer
+        if isinstance(layer_artist.layer, (Subset, WWTImageLayerArtist)):
+            for layer_artist in self.iter_data_layer_artists():
+                if isinstance(layer_artist, WWTTableLayerArtist) and isinstance(layer_artist.layer, Data):
+                    break
+            else:
+                return
+
+        self.active_layer_artist = layer_artist
+        layer_artist.selectable = True
+
+        def _get_index(self, item):
+            data = self.active_layer_artist.layer
+            return next((i for i in range(data.size) if all(data[c][i] == item[c] for c in data.main_components)), None)
+
+        def on_selected(wwt, updated):
+            if "most_recent_source" in updated:
+                index = self._get_index(wwt.most_recent_source)
+                new_state = ElementSubsetState([index], self.active_layer_artist.layer)
+                self.viewer.apply_subset_state(new_state)
+
+        wwt = self.viewer._wwt
+        wwt.set_selection_change_callback(on_selected)
+
+        return super().activate()
+
+    def deactivate(self):
+        if self.active_layer_artist is not None:
+            self.active_layer_artist.selectable = False
+        self.active_layer_artist = None
+        return super().deactivate()
