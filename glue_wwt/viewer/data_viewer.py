@@ -38,16 +38,17 @@ class WWTDataViewerBase(object):
             # Only show local stars when not in Universe or Milky Way mode
             self._wwt.solar_system.stars = self.state.mode not in ['Universe', 'Milky Way']
 
-        if force or 'foreground' in kwargs:
+        imagery = self.state.mode == 'Sky'
+        if imagery and (force or 'foreground' in kwargs):
             self._wwt.foreground = self.state.foreground
 
-        if force or 'background' in kwargs:
+        if imagery and (force or 'background' in kwargs):
             self._wwt.background = self.state.background
 
-        if force or 'foreground_opacity' in kwargs:
+        if imagery and (force or 'foreground_opacity' in kwargs):
             self._wwt.foreground_opacity = self.state.foreground_opacity
 
-        if force or 'galactic' in kwargs:
+        if imagery and (force or 'galactic' in kwargs):
             self._wwt.galactic_mode = self.state.galactic
 
     def get_layer_artist(self, cls, **kwargs):
