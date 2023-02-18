@@ -37,6 +37,7 @@ class WWTDataViewerBase(object):
             self._wwt.solar_system.cosmos = self.state.mode == 'Universe'
             # Only show local stars when not in Universe or Milky Way mode
             self._wwt.solar_system.stars = self.state.mode not in ['Universe', 'Milky Way']
+            force = True
 
         imagery = self.state.mode == 'Sky'
         if imagery and (force or 'foreground' in kwargs):
@@ -90,6 +91,6 @@ class WWTDataViewerBase(object):
             ra = camera.get("ra", 0)
             dec = camera.get("dec", 0)
             fov = camera.get("fov", 60)
-            viewer._wwt.center_on_coordinates(SkyCoord(ra, dec, unit=u.deg), fov=fov * u.deg, instant=True)
+            viewer._wwt.center_on_coordinates(SkyCoord(ra, dec, unit=u.deg), fov=fov * u.deg, instant=False)
         return viewer
 
