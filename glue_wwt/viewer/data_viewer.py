@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 from glue.core.coordinates import WCSCoordinates
+from traitlets import All
 
 from .image_layer import WWTImageLayerArtist
 from .table_layer import WWTTableLayerArtist
@@ -30,27 +31,52 @@ class WWTDataViewerBase(object):
     def _initialize_wwt(self):
         raise NotImplementedError('subclasses should set _wwt here')
 
+    def _force_wwt_trait_update(self, trait, value):
+        notifiers = self._wwt._trait_notifiers
+        changed = {"new": value, "name": trait}
+        if trait in notifiers and 'change' in notifiers[trait]:
+            for onchange in notifiers[trait]['change']:
+                onchange(self._wwt, changed)
+        if All in notifiers and 'change' in notifiers[All]:
+            for onchange in notifiers[All]['change']:
+                onchange(changed)
+
     def _update_wwt(self, force=False, **kwargs):
+        sky_mode = self.state.mode == 'Sky'
         if force or 'mode' in kwargs:
-            self._wwt.set_view(self.state.mode)
+            # If we're changing to sky mode, we don't need to call set_view
+            # because setting the background (which is always a sky imageset here)
+            # will change the WWT viewer mode to match.
+            # If we do call set_view here, it will prevent the background
+            # from being set correctly.
+            # So instead of calling set_view, we just update the foreground/background.
+            # However, we need to force any observer(s) to be called,
+            # because the pywwt "foreground" and "background" fields continue to reflect
+            # the most recent sky backgrounds used even the mode is changed.
+            if sky_mode and not force:
+                self._force_wwt_trait_update('background', self.state.background)
+                self._force_wwt_trait_update('foreground', self.state.foreground)
+                self._force_wwt_trait_update('foreground_opacity', self.state.foreground_opacity)
+                self._force_wwt_trait_update('galactic_mode', self.state.galactic)
+            else:
+                self._wwt.set_view(self.state.mode)
             # Only show SDSS data when in Universe mode
             self._wwt.solar_system.cosmos = self.state.mode == 'Universe'
             # Only show local stars when not in Universe or Milky Way mode
             self._wwt.solar_system.stars = self.state.mode not in ['Universe', 'Milky Way']
-            force = True
 
-        imagery = self.state.mode == 'Sky'
-        if imagery and (force or 'foreground' in kwargs):
-            self._wwt.foreground = self.state.foreground
+        if sky_mode:
+            if force or 'background' in kwargs:
+                self._wwt.background = self.state.background
 
-        if imagery and (force or 'background' in kwargs):
-            self._wwt.background = self.state.background
+            if force or 'foreground' in kwargs:
+                self._wwt.foreground = self.state.foreground
 
-        if imagery and (force or 'foreground_opacity' in kwargs):
-            self._wwt.foreground_opacity = self.state.foreground_opacity
+            if force or 'foreground_opacity' in kwargs:
+                self._wwt.foreground_opacity = self.state.foreground_opacity
 
-        if imagery and (force or 'galactic' in kwargs):
-            self._wwt.galactic_mode = self.state.galactic
+            if force or 'galactic' in kwargs:
+                self._wwt.galactic_mode = self.state.galactic
 
     def get_layer_artist(self, cls, **kwargs):
         "In this package, we must override to append the wwt_client argument."
@@ -91,6 +117,5 @@ class WWTDataViewerBase(object):
             ra = camera.get("ra", 0)
             dec = camera.get("dec", 0)
             fov = camera.get("fov", 60)
-            viewer._wwt.center_on_coordinates(SkyCoord(ra, dec, unit=u.deg), fov=fov * u.deg, instant=False)
+            viewer._wwt.center_on_coordinates(SkyCoord(ra, dec, unit=u.deg), fov=fov * u.deg, instant=True)
         return viewer
-
