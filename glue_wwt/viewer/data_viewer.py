@@ -37,18 +37,21 @@ class WWTDataViewerBase(object):
             self._wwt.solar_system.cosmos = self.state.mode == 'Universe'
             # Only show local stars when not in Universe or Milky Way mode
             self._wwt.solar_system.stars = self.state.mode not in ['Universe', 'Milky Way']
+            force = True
 
-        if force or 'foreground' in kwargs:
-            self._wwt.foreground = self.state.foreground
+        show_imagery = self.state.mode == 'Sky'
+        if show_imagery:
+            if force or 'foreground' in kwargs:
+                self._wwt.foreground = self.state.foreground
 
-        if force or 'background' in kwargs:
-            self._wwt.background = self.state.background
+            if force or 'background' in kwargs:
+                self._wwt.background = self.state.background
 
-        if force or 'foreground_opacity' in kwargs:
-            self._wwt.foreground_opacity = self.state.foreground_opacity
+            if force or 'foreground_opacity' in kwargs:
+                self._wwt.foreground_opacity = self.state.foreground_opacity
 
-        if force or 'galactic' in kwargs:
-            self._wwt.galactic_mode = self.state.galactic
+            if force or 'galactic' in kwargs:
+                self._wwt.galactic_mode = self.state.galactic
 
     def get_layer_artist(self, cls, **kwargs):
         "In this package, we must override to append the wwt_client argument."
@@ -91,4 +94,3 @@ class WWTDataViewerBase(object):
             fov = camera.get("fov", 60)
             viewer._wwt.center_on_coordinates(SkyCoord(ra, dec, unit=u.deg), fov=fov * u.deg, instant=True)
         return viewer
-
