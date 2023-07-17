@@ -1,12 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+from glue.utils import color2hex
 from glue_jupyter.view import IPyWidgetView
 from glue_jupyter.link import link, dlink
 from glue_jupyter.widgets import LinkedDropdown, Color, Size
 
 from pywwt.jupyter import WWTJupyterWidget
 
-from ipywidgets import HBox, Tab, VBox, FloatSlider, FloatText
+from ipywidgets import Accordion, Checkbox, ColorPicker, GridBox, HBox, Label, Layout, Tab, VBox, FloatSlider, FloatText
 
 from .data_viewer import WWTDataViewerBase
 from .image_layer import WWTImageLayerArtist
@@ -39,8 +40,99 @@ class JupterViewerOptions(VBox):
         dlink((self.state, 'mode'), (self.widget_allskyimg.layout, 'display'),
               lambda value: '' if value == 'Sky' else 'none')
 
-        super().__init__([self.widget_mode, self.widget_frame, self.widget_ra,
-                          self.widget_dec, self.alt_opts, self.widget_allskyimg])
+        self.widget_crosshairs = Checkbox(self.state.crosshairs, description="Show crosshairs")
+        link((self.state, 'crosshairs'), (self.widget_crosshairs, 'value'))
+        self.widget_galactic_plane_mode = Checkbox(self.state.galactic, description="Galactic Plane mode")
+        link((self.state, 'galactic'), (self.widget_galactic_plane_mode, 'value'))
+
+        self.general_settings = VBox(children=[self.widget_mode, self.widget_frame, self.widget_ra,
+                                               self.widget_dec, self.alt_opts, self.widget_allskyimg,
+                                               self.widget_crosshairs, self.widget_galactic_plane_mode])
+
+
+        self.widget_alt_az_grid = Checkbox(self.state.alt_az_grid, description="Alt/Az")
+        link((self.state, 'alt_az_grid'), (self.widget_alt_az_grid, 'value'))
+        self.widget_alt_az_text = Checkbox(self.state.alt_az_text, description="Text")
+        link((self.state, 'alt_az_text'), (self.widget_alt_az_text, 'value'))
+        self.widget_alt_az_grid_color = ColorPicker()
+        link((self.state, 'alt_az_grid_color'), (self.widget_alt_az_grid_color, 'value'), color2hex)
+        self.alt_az_settings = HBox(children=[self.widget_alt_az_grid, self.widget_alt_az_text, self.widget_alt_az_grid_color])
+
+        self.widget_ecliptic_grid = Checkbox(self.state.ecliptic_grid, description="Ecliptic")
+        link((self.state, 'ecliptic_grid'), (self.widget_ecliptic_grid, 'value'))
+        self.widget_ecliptic_text = Checkbox(self.state.ecliptic_text, description="Text") 
+        link((self.state, 'ecliptic_text'), (self.widget_ecliptic_text, 'value'))
+        self.widget_ecliptic_grid_color = ColorPicker()
+        link((self.state, 'ecliptic_grid_color'), (self.widget_ecliptic_grid_color, 'value'), color2hex)
+
+        self.widget_equatorial_grid = Checkbox(self.state.equatorial_grid, description="Equatorial")
+        link((self.state, 'equatorial_grid'), (self.widget_equatorial_grid, 'value'))
+        self.widget_equatorial_text = Checkbox(self.state.equatorial_text, description="Text")
+        link((self.state, 'equatorial_text'), (self.widget_equatorial_text, 'value'))
+        self.widget_equatorial_grid_color = ColorPicker()
+        link((self.state, 'equatorial_grid_color'), (self.widget_equatorial_grid_color, 'value'), color2hex)
+
+        self.widget_galactic_grid = Checkbox(self.state.galactic_grid, description="Galactic")
+        link((self.state, 'galactic_grid'), (self.widget_galactic_grid, 'value'))
+        self.widget_galactic_text = Checkbox(self.state.galactic_text, description="Text")
+        link((self.state, 'galactic_text'), (self.widget_galactic_text, 'value'))
+        self.widget_galactic_grid_color = ColorPicker()
+        link((self.state, 'galactic_grid_color'), (self.widget_galactic_grid_color, 'value'), color2hex)
+
+
+        self.grid_settings = GridBox([self.widget_alt_az_grid, self.widget_alt_az_text, self.widget_alt_az_grid_color,
+                                      self.widget_ecliptic_grid, self.widget_ecliptic_text, self.widget_ecliptic_grid_color,
+                                      self.widget_equatorial_grid, self.widget_equatorial_text, self.widget_equatorial_grid_color,
+                                      self.widget_galactic_grid, self.widget_galactic_text, self.widget_galactic_grid_color],
+                                     layout=Layout(grid_template_columns="1fr 2fr 1fr"))
+
+        self.widget_constellation_boundaries = LinkedDropdown(self.state, 'constellation_boundaries', label="Show boundaries")
+        self.widget_constellation_boundary_color = ColorPicker(description="Boundary color:")
+        link((self.state, 'constellation_boundary_color'), (self.widget_constellation_boundary_color, 'value'), color2hex)
+        self.widget_constellation_selection_color = ColorPicker(description="Selection color:")
+        link((self.state, 'constellation_selection_color'), (self.widget_constellation_selection_color, 'value'), color2hex)
+
+        self.widget_constellation_figures = Checkbox(self.state.constellation_figures, description="Show Figures")
+        link((self.state, 'constellation_figures'), (self.widget_constellation_figures, 'value'))
+        self.widget_constellation_figure_color = ColorPicker()
+        link((self.state, 'constellation_figure_color'), (self.widget_constellation_figure_color, 'value'), color2hex)
+        self.widget_constellation_labels = Checkbox(self.state.constellation_labels, description="Show Labels")
+        link((self.state, 'constellation_labels'), (self.widget_constellation_labels, 'value'))
+        self.widget_constellation_pictures = Checkbox(self.state.constellation_pictures, description="Show Pictures")
+        link((self.state, 'constellation_pictures'), (self.widget_constellation_pictures, 'value'))
+
+        self.constellation_figure_settings = HBox(children=[self.widget_constellation_figures, self.widget_constellation_figure_color])
+        self.constellation_images = HBox(children=[self.widget_constellation_labels, self.widget_constellation_pictures])
+
+        self.constellation_settings = VBox(children=[self.widget_constellation_boundaries, self.widget_constellation_boundary_color,
+                                                     self.widget_constellation_selection_color, self.constellation_figure_settings,
+                                                     self.constellation_images])
+
+        self.widget_ecliptic_label = Label("Ecliptic:")
+        self.widget_ecliptic = Checkbox(self.state.ecliptic, description="Show")
+        link((self.state, 'ecliptic'), (self.widget_ecliptic, 'value'))
+        self.widget_ecliptic_color = ColorPicker()
+        link((self.state, 'ecliptic_color'), (self.widget_ecliptic_color, 'value'), color2hex)
+
+        self.widget_precession_chart_label = Label("Precession Chart:")
+        self.widget_precession_chart = Checkbox(self.state.precession_chart, description="Show")
+        link((self.state, 'precession_chart'), (self.widget_precession_chart, 'value'))
+        self.widget_precession_chart_color = ColorPicker()
+        link((self.state, 'precession_chart_color'), (self.widget_precession_chart_color, 'value'), color2hex)
+
+        self.other_settings = GridBox([self.widget_ecliptic_label, self.widget_ecliptic, self.widget_ecliptic_color,
+                                       self.widget_precession_chart_label, self.widget_precession_chart, self.widget_precession_chart_color],
+                                      layout=Layout(grid_template_columns="repeat(3, 100px)"))
+
+        self.settings = Accordion(children=[self.general_settings, self.grid_settings, self.constellation_settings, self.other_settings])
+        self.settings.set_title(0, "General")
+        self.settings.set_title(1, "Grids")
+        self.settings.set_title(2, "Constellations")
+        self.settings.set_title(3, "Other")
+        self.settings.selected_index = 0
+
+
+        super().__init__([self.settings])
 
 
 class JupyterImageLayerOptions(VBox):
