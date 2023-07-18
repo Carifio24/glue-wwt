@@ -50,42 +50,40 @@ class JupterViewerOptions(VBox):
                                                self.widget_crosshairs, self.widget_galactic_plane_mode])
 
 
-        self.widget_alt_az_grid = Checkbox(self.state.alt_az_grid, description="Alt/Az")
+        self.widget_alt_az_grid = Checkbox(self.state.alt_az_grid, description="Alt/Az", indent=False)
         link((self.state, 'alt_az_grid'), (self.widget_alt_az_grid, 'value'))
-        self.widget_alt_az_text = Checkbox(self.state.alt_az_text, description="Text")
+        self.widget_alt_az_text = Checkbox(self.state.alt_az_text, description="Text", indent=False)
         link((self.state, 'alt_az_text'), (self.widget_alt_az_text, 'value'))
-        self.widget_alt_az_grid_color = ColorPicker()
+        self.widget_alt_az_grid_color = ColorPicker(concise=True, layout=Layout(width="fit-content"))
         link((self.state, 'alt_az_grid_color'), (self.widget_alt_az_grid_color, 'value'), color2hex)
-        self.alt_az_settings = HBox(children=[self.widget_alt_az_grid, self.widget_alt_az_text, self.widget_alt_az_grid_color])
+        self.alt_az_grid_settings = HBox(children=[self.widget_alt_az_grid, self.widget_alt_az_text, self.widget_alt_az_grid_color], layout=Layout(justify_content="space-between", width="fit-content"))
 
-        self.widget_ecliptic_grid = Checkbox(self.state.ecliptic_grid, description="Ecliptic")
+        self.widget_ecliptic_grid = Checkbox(self.state.ecliptic_grid, description="Ecliptic", indent=False)
         link((self.state, 'ecliptic_grid'), (self.widget_ecliptic_grid, 'value'))
-        self.widget_ecliptic_text = Checkbox(self.state.ecliptic_text, description="Text") 
+        self.widget_ecliptic_text = Checkbox(self.state.ecliptic_text, description="Text", indent=False) 
         link((self.state, 'ecliptic_text'), (self.widget_ecliptic_text, 'value'))
-        self.widget_ecliptic_grid_color = ColorPicker()
+        self.widget_ecliptic_grid_color = ColorPicker(concise=True, layout=Layout(width="fit-content"))
         link((self.state, 'ecliptic_grid_color'), (self.widget_ecliptic_grid_color, 'value'), color2hex)
+        self.ecliptic_grid_settings = HBox(children=[self.widget_ecliptic_grid, self.widget_ecliptic_text, self.widget_ecliptic_grid_color], layout=Layout(justify_content="space-between", width="fit-content"))
 
-        self.widget_equatorial_grid = Checkbox(self.state.equatorial_grid, description="Equatorial")
+        self.widget_equatorial_grid = Checkbox(self.state.equatorial_grid, description="Equatorial", indent=False)
         link((self.state, 'equatorial_grid'), (self.widget_equatorial_grid, 'value'))
-        self.widget_equatorial_text = Checkbox(self.state.equatorial_text, description="Text")
+        self.widget_equatorial_text = Checkbox(self.state.equatorial_text, description="Text", indent=False)
         link((self.state, 'equatorial_text'), (self.widget_equatorial_text, 'value'))
-        self.widget_equatorial_grid_color = ColorPicker()
+        self.widget_equatorial_grid_color = ColorPicker(concise=True, layout=Layout(width="fit-content"))
         link((self.state, 'equatorial_grid_color'), (self.widget_equatorial_grid_color, 'value'), color2hex)
+        self.equatorial_grid_settings = HBox(children=[self.widget_equatorial_grid, self.widget_equatorial_text, self.widget_equatorial_grid_color], layout=Layout(justify_content="space-between", width="fit-content"))
 
-        self.widget_galactic_grid = Checkbox(self.state.galactic_grid, description="Galactic")
+        self.widget_galactic_grid = Checkbox(self.state.galactic_grid, description="Galactic", indent=False)
         link((self.state, 'galactic_grid'), (self.widget_galactic_grid, 'value'))
-        self.widget_galactic_text = Checkbox(self.state.galactic_text, description="Text")
+        self.widget_galactic_text = Checkbox(self.state.galactic_text, description="Text", indent=False)
         link((self.state, 'galactic_text'), (self.widget_galactic_text, 'value'))
-        self.widget_galactic_grid_color = ColorPicker()
+        self.widget_galactic_grid_color = ColorPicker(concise=True, layout=Layout(width="fit-content"))
         link((self.state, 'galactic_grid_color'), (self.widget_galactic_grid_color, 'value'), color2hex)
+        self.galactic_grid_settings = HBox(children=[self.widget_galactic_grid, self.widget_galactic_text, self.widget_galactic_grid_color], layout=Layout(justify_content="space-between", width="fit-content"))
 
-
-        self.grid_settings = GridBox([self.widget_alt_az_grid, self.widget_alt_az_text, self.widget_alt_az_grid_color,
-                                      self.widget_ecliptic_grid, self.widget_ecliptic_text, self.widget_ecliptic_grid_color,
-                                      self.widget_equatorial_grid, self.widget_equatorial_text, self.widget_equatorial_grid_color,
-                                      self.widget_galactic_grid, self.widget_galactic_text, self.widget_galactic_grid_color],
-                                     layout=Layout(grid_template_columns="1fr 2fr 1fr"))
-
+        self.grid_settings = VBox(children=[self.alt_az_grid_settings, self.ecliptic_grid_settings, self.equatorial_grid_settings, self.galactic_grid_settings], layout=Layout(width="fit-content"))
+        
         self.widget_constellation_boundaries = LinkedDropdown(self.state, 'constellation_boundaries', label="Show boundaries")
         self.widget_constellation_boundary_color = ColorPicker(description="Boundary color:")
         link((self.state, 'constellation_boundary_color'), (self.widget_constellation_boundary_color, 'value'), color2hex)
