@@ -17,6 +17,10 @@ from .table_layer import WWTTableLayerArtist
 class JupterViewerOptions(VBox):
     def __init__(self, viewer_state, available_layers):
 
+        fit_content_layout = Layout(width="fit-content")
+        flex_layout = Layout(width="fit-content", justify_content="space-between")
+        opposite = lambda value: not value
+
         self.state = viewer_state
 
         self.widget_mode = LinkedDropdown(self.state, "mode", label="Mode:")
@@ -49,37 +53,41 @@ class JupterViewerOptions(VBox):
                                                self.widget_dec, self.alt_opts, self.widget_allskyimg,
                                                self.widget_crosshairs, self.widget_galactic_plane_mode])
 
-        fit_content_layout = Layout(width="fit-content")
-        flex_layout = Layout(width="fit-content", justify_content="space-between")
-
-
         self.widget_alt_az_grid = Checkbox(self.state.alt_az_grid, description="Alt/Az", indent=False, layout=fit_content_layout)
         link((self.state, 'alt_az_grid'), (self.widget_alt_az_grid, 'value'))
         self.widget_alt_az_text = Checkbox(self.state.alt_az_text, description="Text", indent=False, layout=fit_content_layout)
         link((self.state, 'alt_az_text'), (self.widget_alt_az_text, 'value'))
+        dlink((self.widget_alt_az_grid, 'value'), (self.widget_alt_az_text, 'disabled'), opposite)
         self.widget_alt_az_grid_color = ColorPicker(concise=True, layout=fit_content_layout)
         link((self.state, 'alt_az_grid_color'), (self.widget_alt_az_grid_color, 'value'), color2hex)
+        dlink((self.widget_alt_az_grid, 'value'), (self.widget_alt_az_grid_color, 'disabled'), opposite)
 
         self.widget_ecliptic_grid = Checkbox(self.state.ecliptic_grid, description="Ecliptic", indent=False, layout=fit_content_layout)
         link((self.state, 'ecliptic_grid'), (self.widget_ecliptic_grid, 'value'))
         self.widget_ecliptic_text = Checkbox(self.state.ecliptic_text, description="Text", indent=False, layout=fit_content_layout) 
         link((self.state, 'ecliptic_text'), (self.widget_ecliptic_text, 'value'))
+        dlink((self.widget_ecliptic_grid, 'value'), (self.widget_ecliptic_text, 'disabled'), opposite)
         self.widget_ecliptic_grid_color = ColorPicker(concise=True, layout=fit_content_layout)
         link((self.state, 'ecliptic_grid_color'), (self.widget_ecliptic_grid_color, 'value'), color2hex)
+        dlink((self.widget_ecliptic_grid, 'value'), (self.widget_ecliptic_grid_color, 'disabled'), opposite)
 
         self.widget_equatorial_grid = Checkbox(self.state.equatorial_grid, description="Equatorial", indent=False, layout=fit_content_layout)
         link((self.state, 'equatorial_grid'), (self.widget_equatorial_grid, 'value'))
         self.widget_equatorial_text = Checkbox(self.state.equatorial_text, description="Text", indent=False, layout=fit_content_layout)
         link((self.state, 'equatorial_text'), (self.widget_equatorial_text, 'value'))
+        dlink((self.widget_equatorial_grid, 'value'), (self.widget_equatorial_text, 'disabled'), opposite)
         self.widget_equatorial_grid_color = ColorPicker(concise=True, layout=fit_content_layout)
         link((self.state, 'equatorial_grid_color'), (self.widget_equatorial_grid_color, 'value'), color2hex)
+        dlink((self.widget_equatorial_grid, 'value'), (self.widget_equatorial_grid_color, 'disabled'), opposite)
 
         self.widget_galactic_grid = Checkbox(self.state.galactic_grid, description="Galactic", indent=False, layout=fit_content_layout)
         link((self.state, 'galactic_grid'), (self.widget_galactic_grid, 'value'))
         self.widget_galactic_text = Checkbox(self.state.galactic_text, description="Text", indent=False, layout=fit_content_layout)
         link((self.state, 'galactic_text'), (self.widget_galactic_text, 'value'))
+        dlink((self.widget_galactic_grid, 'value'), (self.widget_galactic_text, 'disabled'), opposite)
         self.widget_galactic_grid_color = ColorPicker(concise=True, layout=fit_content_layout)
         link((self.state, 'galactic_grid_color'), (self.widget_galactic_grid_color, 'value'), color2hex)
+        dlink((self.widget_galactic_grid, 'value'), (self.widget_galactic_grid_color, 'disabled'), opposite)
 
         self.grid_settings = GridBox(children=[self.widget_alt_az_grid, self.widget_alt_az_text, self.widget_alt_az_grid_color,
                                                self.widget_ecliptic_grid, self.widget_ecliptic_text, self.widget_ecliptic_grid_color,
@@ -90,13 +98,18 @@ class JupterViewerOptions(VBox):
         self.widget_constellation_boundaries = LinkedDropdown(self.state, 'constellation_boundaries', label="Show boundaries")
         self.widget_constellation_boundary_color = ColorPicker(concise=True, description="Boundary", layout=fit_content_layout)
         link((self.state, 'constellation_boundary_color'), (self.widget_constellation_boundary_color, 'value'), color2hex)
+        dlink((self.widget_constellation_boundaries, 'value'), (self.widget_constellation_boundary_color, 'disabled'),
+              lambda value: value == "All")
         self.widget_constellation_selection_color = ColorPicker(concise=True, description="Selection", layout=fit_content_layout)
         link((self.state, 'constellation_selection_color'), (self.widget_constellation_selection_color, 'value'), color2hex)
+        dlink((self.widget_constellation_boundaries, 'value'), (self.widget_constellation_selection_color, 'disabled'),
+              lambda value: value != "None")
 
         self.widget_constellation_figures = Checkbox(self.state.constellation_figures, description="Figures", indent=False, layout=fit_content_layout)
         link((self.state, 'constellation_figures'), (self.widget_constellation_figures, 'value'))
         self.widget_constellation_figure_color = ColorPicker(concise=True, description="Figure", layout=fit_content_layout)
         link((self.state, 'constellation_figure_color'), (self.widget_constellation_figure_color, 'value'), color2hex)
+        dlink((self.widget_constellation_figures, 'value'), (self.widget_constellation_figure_color, 'disabled'), opposite)
         self.widget_constellation_labels = Checkbox(self.state.constellation_labels, description="Labels", indent=False, layout=fit_content_layout)
         link((self.state, 'constellation_labels'), (self.widget_constellation_labels, 'value'))
         self.widget_constellation_pictures = Checkbox(self.state.constellation_pictures, description="Pictures", indent=False, layout=fit_content_layout)
@@ -121,12 +134,14 @@ class JupterViewerOptions(VBox):
         link((self.state, 'ecliptic'), (self.widget_ecliptic, 'value'))
         self.widget_ecliptic_color = ColorPicker(concise=True, layout=fit_content_layout)
         link((self.state, 'ecliptic_color'), (self.widget_ecliptic_color, 'value'), color2hex)
+        dlink((self.widget_ecliptic_label, 'value'), (self.widget_ecliptic_color, 'disabled'), opposite)
 
         self.widget_precession_chart_label = Label("Precession Chart:")
         self.widget_precession_chart = Checkbox(self.state.precession_chart, description="Show", indent=False, layout=fit_content_layout)
         link((self.state, 'precession_chart'), (self.widget_precession_chart, 'value'))
         self.widget_precession_chart_color = ColorPicker(concise=True, layout=fit_content_layout)
         link((self.state, 'precession_chart_color'), (self.widget_precession_chart_color, 'value'), color2hex)
+        dlink((self.widget_precession_chart, 'value'), (self.widget_precession_chart_color, 'disabled'), opposite)
 
         self.other_settings = GridBox(children=[self.widget_ecliptic_label, self.widget_ecliptic, self.widget_ecliptic_color,
                                                 self.widget_precession_chart_label, self.widget_precession_chart, self.widget_precession_chart_color],
