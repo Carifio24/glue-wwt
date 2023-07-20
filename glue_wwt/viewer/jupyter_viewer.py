@@ -85,28 +85,36 @@ class JupterViewerOptions(VBox):
                                                self.widget_ecliptic_grid, self.widget_ecliptic_text, self.widget_ecliptic_grid_color,
                                                self.widget_equatorial_grid, self.widget_equatorial_text, self.widget_equatorial_grid_color,
                                                self.widget_galactic_grid, self.widget_galactic_text, self.widget_galactic_grid_color],
-                                     layout=Layout(grid_template_columns="2fr 2fr 1fr", width="100%", grid_gap="10px"))
+                                     layout=Layout(grid_template_columns="2fr 2fr 1fr", width="100%", grid_gap="2px 10px"))
         
         self.widget_constellation_boundaries = LinkedDropdown(self.state, 'constellation_boundaries', label="Show boundaries")
-        self.widget_constellation_boundary_color = ColorPicker(concise=True, description="Boundary color:", layout=fit_content_layout)
+        self.widget_constellation_boundary_color = ColorPicker(concise=True, description="Boundary", layout=fit_content_layout)
         link((self.state, 'constellation_boundary_color'), (self.widget_constellation_boundary_color, 'value'), color2hex)
-        self.widget_constellation_selection_color = ColorPicker(concise=True, description="Selection color:", layout=fit_content_layout)
+        self.widget_constellation_selection_color = ColorPicker(concise=True, description="Selection", layout=fit_content_layout)
         link((self.state, 'constellation_selection_color'), (self.widget_constellation_selection_color, 'value'), color2hex)
 
-        self.widget_constellation_figures = Checkbox(self.state.constellation_figures, description="Show Figures", indent=False, layout=fit_content_layout)
+        self.widget_constellation_figures = Checkbox(self.state.constellation_figures, description="Figures", indent=False, layout=fit_content_layout)
         link((self.state, 'constellation_figures'), (self.widget_constellation_figures, 'value'))
-        self.widget_constellation_figure_color = ColorPicker(concise=True, layout=fit_content_layout)
+        self.widget_constellation_figure_color = ColorPicker(concise=True, description="Figure", layout=fit_content_layout)
         link((self.state, 'constellation_figure_color'), (self.widget_constellation_figure_color, 'value'), color2hex)
-        self.widget_constellation_labels = Checkbox(self.state.constellation_labels, description="Show Labels", indent=False, layout=fit_content_layout)
+        self.widget_constellation_labels = Checkbox(self.state.constellation_labels, description="Labels", indent=False, layout=fit_content_layout)
         link((self.state, 'constellation_labels'), (self.widget_constellation_labels, 'value'))
-        self.widget_constellation_pictures = Checkbox(self.state.constellation_pictures, description="Show Pictures", indent=False, layout=fit_content_layout)
+        self.widget_constellation_pictures = Checkbox(self.state.constellation_pictures, description="Pictures", indent=False, layout=fit_content_layout)
         link((self.state, 'constellation_pictures'), (self.widget_constellation_pictures, 'value'))
 
-        self.constellation_settings = GridBox(children=[self.widget_constellation_boundaries, self.widget_constellation_boundary_color,
-                                                        self.widget_constellation_selection_color, self.widget_constellation_figures,
-                                                        self.widget_constellation_figure_color, self.widget_constellation_labels,
-                                                        self.widget_constellation_pictures],
-                                              layout=Layout(width="100%", grid_gap="10px", grid_template_columns="repeat(3, 1fr"))
+
+        constellations_hbox_layout = Layout(gap="10px", justify_content="space-between")
+        constellations_vbox_layout = Layout(height="fit-content", gap="2px", padding="5px", flex_direction="column")
+        self.constellation_checkboxes = HBox(children=[self.widget_constellation_pictures, self.widget_constellation_labels,
+                                                       self.widget_constellation_figures],
+                                             layout=constellations_hbox_layout)
+
+        self.constellation_colors = VBox(children=[self.widget_constellation_selection_color, self.widget_constellation_boundary_color,
+                                                                  self.widget_constellation_figure_color],
+                                         layout=constellations_vbox_layout)
+
+        self.constellation_settings = VBox(children=[self.widget_constellation_boundaries, self.constellation_checkboxes, self.constellation_colors],
+                                           layout=constellations_vbox_layout)
 
         self.widget_ecliptic_label = Label("Ecliptic:")
         self.widget_ecliptic = Checkbox(self.state.ecliptic, description="Show", indent=False, layout=fit_content_layout)
@@ -122,7 +130,7 @@ class JupterViewerOptions(VBox):
 
         self.other_settings = GridBox(children=[self.widget_ecliptic_label, self.widget_ecliptic, self.widget_ecliptic_color,
                                                 self.widget_precession_chart_label, self.widget_precession_chart, self.widget_precession_chart_color],
-                                      layout=Layout(grid_template_columns="5fr 1fr 1fr", width="100%", grid_gap="10px"))
+                                      layout=Layout(grid_template_columns="5fr 1fr 1fr", width="100%", grid_gap="2px 10px"))
 
         self.settings = Accordion(children=[self.general_settings, self.grid_settings, self.constellation_settings, self.other_settings],
                                   layout=Layout(width="350px"))
@@ -190,7 +198,7 @@ class WWTJupyterViewer(WWTDataViewerBase, IPyWidgetView):
                                 self._layout_layer_options])
         self._layout_tab.set_title(0, "General")
         self._layout_tab.set_title(1, "Layers")
-        self._layout = HBox([self.figure_widget, self._layout_tab])
+        self._layout = HBox([self.figure_widget, self._layout_tab], layout=Layout(height="400px"))
 
     def _initialize_wwt(self):
         self._wwt = WWTJupyterWidget()
