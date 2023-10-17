@@ -42,7 +42,7 @@ __all__ = ['WWTTableLayerArtist']
 
 RESET_TABLE_PROPERTIES = ('mode', 'frame', 'lon_att', 'lat_att', 'alt_att',
                           'alt_unit', 'size_att', 'cmap_att', 'size_mode',
-                          'color_mode')
+                          'color_mode', 'time_att')
 
 
 class WWTTableLayerState(LayerState):
@@ -69,6 +69,10 @@ class WWTTableLayerState(LayerState):
     cmap = CallbackProperty()
     cmap_mode = color_mode
 
+    time_att = SelectionCallbackProperty()
+    time_decay_value = CallbackProperty(16)
+    time_decay_unit = SelectionCallbackProperty(default_index=0, display_func=lambda value: value.long_names[0])
+
     size_limits_cache = CallbackProperty({})
     cmap_limits_cache = CallbackProperty({})
 
@@ -94,6 +98,10 @@ class WWTTableLayerState(LayerState):
         self.cmap_att_helper = ComponentIDComboHelper(self, 'cmap_att',
                                                       numeric=True,
                                                       categorical=False)
+        self.time_att_helper = ComponentIDComboHelper(self, 'cmap_att',
+                                                      datetime=True,
+                                                      numeric=False,
+                                                      categorical=False)
         self.img_data_att_helper = ComponentIDComboHelper(self, 'img_data_att',
                                                           numeric=True,
                                                           categorical=False)
@@ -114,13 +122,15 @@ class WWTTableLayerState(LayerState):
 
         # Color and size encoding depending on attributes is only available
         # in PyWWT 0.6 or later.
-        if PYWWT_LT_06:
-            modes = ['Fixed']
-        else:
-            modes = ['Fixed', 'Linear']
+        # if PYWWT_LT_06:
+        #     modes = ['Fixed']
+        # else:
+        #     modes = ['Fixed', 'Linear']
+        modes = ['Fixed', 'Linear']
 
         WWTTableLayerState.color_mode.set_choices(self, modes)
         WWTTableLayerState.size_mode.set_choices(self, modes)
+        WWTTableLayerState.time_decay_unit.set_choices(self, [u.day, u.year, u.Myr, u.Gyr])
 
         self.update_from_dict(kwargs)
 
@@ -129,10 +139,12 @@ class WWTTableLayerState(LayerState):
             if self.layer is None:
                 self.cmap_att_helper.set_multiple_data([])
                 self.size_att_helper.set_multiple_data([])
+                self.time_att_helper.set_multiple_data([])
                 self.img_data_att_helper.set_multiple_data([])
             else:
                 self.cmap_att_helper.set_multiple_data([self.layer])
                 self.size_att_helper.set_multiple_data([self.layer])
+                self.time_att_helper.set_multiple_data([self.layer])
                 self.img_data_att_helper.set_multiple_data([self.layer])
 
     def update_priority(self, name):
@@ -256,6 +268,15 @@ class WWTTableLayerArtist(LayerArtist):
             else:
                 cmap_values = None
 
+            if self.state.time_att is not None:
+                try:
+                    time_values = self.layer[self.state.time_att]
+                except IncompatibleAttribute:
+                    self.disable_invalid_attributes(self.state.time_att)
+                    return
+            else:
+                time_values = None
+
             self.clear()
 
             if not len(lon):
@@ -330,6 +351,11 @@ class WWTTableLayerArtist(LayerArtist):
                 tab['cmap'] = cmap_values
                 data_kwargs['cmap_att'] = 'cmap'
 
+            if time_values is not None:
+                tab['time'] = time_values,
+                data_kwargs['time_att'] = 'time'
+                data_kwargs['time_series'] = True
+
             if need_longitude_fix:
                 if lon_orig is not None:
                     tab['lon_orig'] = lon_orig * u.degree
@@ -385,6 +411,9 @@ class WWTTableLayerArtist(LayerArtist):
 
         if force or 'cmap' in changed:
             self.wwt_layer.cmap = self.state.cmap
+
+        if force or 'time_decay_value' in changed or 'time_decay_unit' in changed:
+            self.wwt_layer.time_decay = self.state.time_decay_value * self.state.time_decay_unit
 
         self.enable()
 
