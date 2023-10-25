@@ -2,7 +2,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+from threading import Timer
+
 from glue.core.coordinates import WCSCoordinates
+from pywwt.core import ViewerNotAvailableError
 
 from .image_layer import WWTImageLayerArtist
 from .table_layer import WWTTableLayerArtist
@@ -46,8 +49,21 @@ class WWTDataViewerBase(object):
         self._wwt.actual_planet_scale = True
         self.state.imagery_layers = list(self._wwt.available_layers)
 
+        # The more obvious thing to do would be to listen to the WWT widget's "wwt_view_state" message,
+        # which contains information about WWT's internal time. But we only get those messages when something
+        # changes with the WWT view, so we can't rely on that here.
+        # This just kicks off the first timer; the method repeatedly time-calls itself
+        self._current_time_timer = Timer(1.0, self._update_time)
+        self._current_time_timer.start()
+
         self.state.add_global_callback(self._update_wwt)
+
         self._update_wwt(force=True)
+
+    # NB: Specific frontend implementations need to call this
+    # We just consolidate the logic here
+    def _cleanup(self):
+        self._current_time_timer.cancel()
 
     def _initialize_wwt(self):
         raise NotImplementedError('subclasses should set _wwt here')
@@ -64,7 +80,7 @@ class WWTDataViewerBase(object):
             self._wwt.constellation_boundaries = self.state.constellation_boundaries != 'None'
             self._wwt.constellation_selection = self.state.constellation_boundaries == 'Selection only'
 
-        if force or ('last_set_time' in kwargs and self.state.last_set_time != self._wwt.get_current_time()):
+        if force or ('last_set_time' in kwargs and self.state.last_set_time != self._wwt.get_current_time().to_datetime()):
             print(self.state.last_set_time)
             self._wwt.set_current_time(self.state.last_set_time)
 
@@ -98,3 +114,13 @@ class WWTDataViewerBase(object):
     def get_subset_layer_artist(self, layer=None, layer_state=None):
         # At some point maybe we'll use different classes for this?
         return self.get_data_layer_artist(layer=layer, layer_state=layer_state)
+
+    def _update_time(self):
+        try:
+            self.state.current_time = self._wwt.get_current_time().to_datetime()
+        except ViewerNotAvailableError:
+            print("Error in _update_time")
+            pass
+
+        self._current_time_timer = Timer(1.0, self._update_time)
+        self._current_time_timer.start()
