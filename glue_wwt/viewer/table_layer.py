@@ -360,6 +360,7 @@ class WWTTableLayerArtist(LayerArtist):
                 data_kwargs['time_series'] = self.state.time_series
                 data_kwargs['time_att'] = 'time'
 
+
             if need_longitude_fix:
                 if lon_orig is not None:
                     tab['lon_orig'] = lon_orig * u.degree
@@ -370,9 +371,6 @@ class WWTTableLayerArtist(LayerArtist):
             self.wwt_layer = self.wwt_client.layers.add_table_layer(tab, frame=ref_frame,
                                                                     lon_att='lon', lat_att='lat',
                                                                     **data_kwargs)
-            if self.state.time_series:
-                self.wwt_layer.time_att = 'time'
-
             self.wwt_layer.far_side_visible = self._viewer_state.mode in MODES_3D
 
             self._coords = lon, lat
