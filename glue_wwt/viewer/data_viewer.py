@@ -4,7 +4,9 @@ from __future__ import absolute_import, division, print_function
 
 from threading import Timer
 
+from astropy.time import Time
 from glue.core.coordinates import WCSCoordinates
+from numpy import datetime64
 from pywwt.core import ViewerNotAvailableError
 
 from .image_layer import WWTImageLayerArtist
@@ -81,7 +83,7 @@ class WWTDataViewerBase(object):
             self._wwt.constellation_selection = self.state.constellation_boundaries == 'Selection only'
 
         if force or 'current_time' in kwargs:
-            self._wwt.set_current_time(self.state.current_time)
+            self._wwt.set_current_time(Time(self.state.current_time))
 
         if force or any(setting in kwargs for setting in self._CLOCK_SETTINGS):
             if self.state.play_time:
@@ -116,7 +118,7 @@ class WWTDataViewerBase(object):
 
     def _update_time(self):
         try:
-            self.state.current_time = self._wwt.get_current_time().to_datetime()
+            self.state.current_time = datetime64(self._wwt.get_current_time().to_string())
         except ViewerNotAvailableError:
             print("Error in _update_time")
             pass
