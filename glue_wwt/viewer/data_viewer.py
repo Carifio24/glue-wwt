@@ -3,6 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 from glue.core.coordinates import WCSCoordinates
+from pywwt.layers import guess_lon_lat_columns
 
 from .image_layer import WWTImageLayerArtist
 from .table_layer import WWTTableLayerArtist
@@ -84,3 +85,13 @@ class WWTDataViewerBase(object):
     def get_subset_layer_artist(self, layer=None, layer_state=None):
         # At some point maybe we'll use different classes for this?
         return self.get_data_layer_artist(layer=layer, layer_state=layer_state)
+
+    def add_data(self, data):
+        add = super().add_data(data)
+        if add and len(self.state.layers) == 1:
+            colnames = [c.label for c in data.components]
+            lon, lat = guess_lon_lat_columns(colnames)
+            if lon is not None and lat is not None:
+                self.state.lon_att = data.id[lon]
+                self.state.lat_att = data.id[lat]
+        return add
