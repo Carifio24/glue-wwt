@@ -18,7 +18,7 @@ dependencies = [
     "glue-core>=1.13.1",
     "echo",
     "astropy",
-    "pywwt>=0.21.0",
+    "pywwt>=0.24.1",
     "packaging",
 ]
 dynamic = ["version"]
@@ -35,10 +35,21 @@ test = [
     "mock",
 ]
 qt = [
+    "pywwt[qt]",
     "qtpy",
     "glue-qt",
     'PyQt5;python_version>="3"',
     'PyQtWebEngine;python_version>="3"',
+]
+qt6 = [
+    "pywwt[qt6]",
+    "qtpy",
+    'PyQt6;python_version>="3"',
+    'PyQt6-WebEngine;python_version>="3"',
+]
+jupyter = [
+    "glue-jupyter",
+    "wwt_kernel_data_relay",
 ]
 
 [tool.setuptools]
