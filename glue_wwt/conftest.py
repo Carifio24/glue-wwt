@@ -13,12 +13,15 @@ def pytest_configure(config):
 
     global app
 
-    # We need to import PyWWT before setting up a QApplication since the
-    # WebEngine widgets require this.
-    from pywwt.qt import WWTQtClient  # noqa
+    try:
+        # We need to import PyWWT before setting up a QApplication since the
+        # WebEngine widgets require this.
+        from pywwt.qt import WWTQtClient  # noqa
 
-    from glue_qt.utils import get_qapp
-    app = get_qapp()
+        from glue_qt.utils import get_qapp
+        app = get_qapp()
+    except ImportError:
+        pass
 
 
 def pytest_unconfigure(config):

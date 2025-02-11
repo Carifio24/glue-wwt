@@ -15,5 +15,5 @@ def setup_qt():
 def setup():
     try:
         setup_qt()
-    except:
+    except ImportError:
         pass

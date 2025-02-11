@@ -30,9 +30,9 @@ jobs:
 
       envs: |
         # Standard tests
-        - linux: py38-test
-        - linux: py39-test
-        - linux: py310-test-devdeps
+        - linux: py38-test-pyqt514-all
+        - linux: py39-test-pyqt515-all
+        - linux: py310-test--devdeps
         - linux: py311-test
         - linux: py312-test-devdeps
 
