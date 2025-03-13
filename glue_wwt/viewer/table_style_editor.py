@@ -7,6 +7,8 @@ from qtpy import QtWidgets
 from echo.qt import autoconnect_callbacks_to_qt
 from glue_qt.utils import load_ui, fix_tab_widget_fontsize
 
+from glue_wwt.viewer.viewer_state import MODES_BODIES
+
 
 class WWTTableStyleEditor(QtWidgets.QWidget):
 
@@ -41,7 +43,7 @@ class WWTTableStyleEditor(QtWidgets.QWidget):
         self._viewer_state.add_callback('mode', self._on_mode_changed)
 
     def _on_mode_changed(self, *args):
-        self.ui.button_center.setVisible(self._viewer_state.mode == 'Sky')
+        self.ui.button_center.setVisible(self._viewer_state.mode in MODES_BODIES)
 
     def _update_size_mode(self, *args):
 

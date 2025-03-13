@@ -346,11 +346,16 @@ class WWTTableLayerArtist(LayerArtist):
         if len(lon) == 0:
             return
 
+        sky_mode = self._viewer_state.mode == "Sky"
+
         lon_cen, lat_cen, sep_max = center_fov(lon, lat)
+        if not sky_mode:
+            lon_cen = 360 - lon_cen
         if lon_cen is None:
             return
 
-        fov = min(60, sep_max * 3)
+        sep_max_factor = 3 if sky_mode else 1
+        fov = min(60, sep_max * sep_max_factor)
         self.wwt_client.center_on_coordinates(SkyCoord(lon_cen, lat_cen,
                                                        unit=u.degree, frame='icrs'),
                                               fov * u.degree, instant=False)
