@@ -348,9 +348,7 @@ class WWTTableLayerArtist(LayerArtist):
 
         sky_mode = self._viewer_state.mode == "Sky"
 
-        lon_cen, lat_cen, sep_max = center_fov(lon, lat)
-        if not sky_mode:
-            lon_cen = 360 - lon_cen
+        lon_cen, lat_cen, sep_max = center_fov(lon, lat, sky=sky_mode)
         if lon_cen is None:
             return
 

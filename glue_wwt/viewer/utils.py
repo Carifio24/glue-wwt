@@ -7,12 +7,12 @@ try:
     from astropy.coordinates import angular_separation
 except ImportError:
     from astropy.coordinates.angle_utilities import angular_separation
-from astropy.coordinates.representation import UnitSphericalRepresentation
+from astropy.coordinates import EarthLocation, UnitSphericalRepresentation
 
 __all__ = ['center_fov']
 
 
-def center_fov(lon, lat):
+def center_fov(lon, lat, sky=True):
 
     # We need to filter out any non-finite values
     keep = np.isfinite(lon) & np.isfinite(lat)
@@ -22,8 +22,9 @@ def center_fov(lon, lat):
     lat = u.Quantity(lat, u.deg, copy=False)
 
     unit_sph = UnitSphericalRepresentation(lon, lat, copy=False)
-
     cen = unit_sph.mean()
+    if sky:
+        cen = EarthLocation.from_geodetic(cen.lon, cen.lat)
 
     sep = angular_separation(lon, lat, cen.lon, cen.lat).to(u.deg).value.max()
 
