@@ -5,7 +5,7 @@ import time
 from os.path import abspath, dirname, join
 from qtpy import compat
 
-from glue.viewers.common.tool import Tool
+from glue.viewers.common.tool import CheckableTool, Tool
 from glue.config import viewer_tool
 from glue_qt.utils import get_qapp
 
@@ -125,3 +125,18 @@ class RefreshTileCacheTool(Tool):
 
     def activate(self):
         self.viewer._wwt.refresh_tile_cache()
+
+
+@viewer_tool
+class FinderScopeTool(CheckableTool):
+    
+    icon = 'glue_zoom_to_rect'
+    tool_id = 'wwt:finder_scope'
+    action_text = 'Toggle whether the Finder Scope is active'
+    tool_tip = 'Toggle whether the Finder Scope is active'
+
+    def activate(self):
+        self.viewer._wwt.finder_scope_enabled = True
+
+    def deactivate(self):
+        self.viewer._wwt.finder_scope_enabled = False 
